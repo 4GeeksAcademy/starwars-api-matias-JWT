@@ -10,7 +10,7 @@ class User(db.Model):
     is_active = db.Column(db.Boolean(), unique=False, nullable=False)
 
     # Relationships 1 a 1 con Favourite
-    favourites = db.relationship('Favourite', backref='user', lazy=True)
+    favourites = db.relationship('Favourite', backref='user', lazy=True) # NO ES 1 a 1
 
     def __repr__(self):
         return '<User %r>' % self.id
@@ -29,7 +29,7 @@ class Favourite(db.Model):
 
     # Relationships 1 a 1 con User
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    
+    user = db.relationship('User', back_populates='favorite', uselist=False) # de rodrigo, sino me queda de 1 user a n favourite
 
     # Relationship 1 a n con People, Planet, Vehicle, Starship
     id_peoples = db.relationship('People', backref='favourite', lazy=True)
@@ -59,7 +59,7 @@ class People(db.Model):
     gender = db.Column(db.String(120), unique=True, nullable=False)
 
     # Relationships n a 1 con Favourite
-    favourite_id = db.Column(db.Integer, db.ForeignKey('favourite.id'),nullable=False)
+    favourite_id = db.Column(db.Integer, db.ForeignKey('favourite.id'),nullable=True)
     #user = db.relationship('User') # forma Rodri
 
     def __repr__(self):
@@ -92,7 +92,7 @@ class Vehicle(db.Model):
     vehicle_class = db.Column(db.String(250), nullable=False)
 
     # Relationships n a 1 con Favourite
-    favourite_id = db.Column(db.Integer, db.ForeignKey('favourite.id'),nullable=False)
+    favourite_id = db.Column(db.Integer, db.ForeignKey('favourite.id'),nullable=True)
 
     def __repr__(self):
         return '<Vehicle %r>' % self.id
@@ -124,7 +124,7 @@ class Planet(db.Model):
     population = db.Column(db.Integer, nullable=False)
 
     # Relationships n a 1 con Favourite
-    favourite_id = db.Column(db.Integer, db.ForeignKey('favourite.id'),nullable=False)
+    favourite_id = db.Column(db.Integer, db.ForeignKey('favourite.id'),nullable=True)
 
     def __repr__(self):
         return '<Planet %r>' % self.id
