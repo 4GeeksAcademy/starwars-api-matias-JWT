@@ -108,16 +108,36 @@ def get_one_user(user_id):
 @app.route('/users/<int:user_id>/favourites', methods=['GET'])
 def get_user_favourite(user_id):
 
-    #favourite_query = Favourite.query.filter_by(id=user_id).first()
-    favoritos = Favourite.query.filter_by(user_id=user_id).all()
+    print("TEST 1: ", user_id)
 
+    # favourite_query = Favourite.query.filter_by(id=user_id).first()
+    # print("TEST 2: ", favourite_query) # None
+
+    # favourite_query_2 = Favourite.query.all()
+    # print("TEST 3: ", favourite_query_2)
+
+    # favourite_query_3 = list(map(lambda item: item.serialize(), favourite_query_2))
+    # print("TEST 4: ", favourite_query_3) # hay que serializar en models
+    
+    # id_user es de model y user_id es el param del path
+    favourite_query_4 = Favourite.query.filter_by(id_user = user_id).all() # devuelve una lista al ser .all(), hay que mapear
+    print("TEST 5: ", favourite_query_4)
+
+    #favourite_query_5 =  favourite_query_4.serialize()
+    favourite_query_5 =  list(map(lambda item: item.serialize(), favourite_query_4))
+    print("TEST 5: ", favourite_query_5)     
+
+    #favourite_query = Favourite.query.filter_by(id=user_id).first()
+    # favoritos = Favourite.query.filter_by(user_id=user_id).all()
+    
     #print("favourite_query: ", favourite_query)
     #print("favourite_query serialize: ", favourite_query.serialize())
     # datos_favoritos = [f.serialize() for f in favoritos]
-    datos_favoritos = list(map(lambda item: item.serialize(), favoritos))
+    #datos_favoritos = list(map(lambda item: item.serialize(), favourite_query))
+    #print("datos_favoritos: ", datos_favoritos)
 
     response_body = { "msg": "These is the one you are looking for",
-                     "results": datos_favoritos}
+                     "results": favourite_query_5}
     
     return jsonify(response_body), 200
 

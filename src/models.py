@@ -2,6 +2,10 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
+# ROSINI:
+# favoritos n planetas 1
+# usuario 1 favoritos n
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username =  db.Column(db.String(120), unique=True, nullable=False)
@@ -9,8 +13,9 @@ class User(db.Model):
     password = db.Column(db.String(80), unique=False, nullable=False)
     is_active = db.Column(db.Boolean(), unique=False, nullable=False)
 
-    # Relationships 1 a 1 con Favourite
-    favourites = db.relationship('Favourite', backref='user', lazy=True) # NO ES 1 a 1
+    # Relationships 1 a n con Favourite
+    favourites = db.relationship('Favourite', backref='user', lazy=True)
+    
 
     def __repr__(self):
         return '<User %r>' % self.id
@@ -27,36 +32,30 @@ class Favourite(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), unique=True, nullable=False)
 
-    # Relationships 1 a 1 con User
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    # user = db.relationship('User', back_populates='favorite', uselist=False) # de rodrigo, sino me queda de 1 user a n favourite
+    # Relationships 1 a n con User, people, planet, vehicle, starship
+    id_user = db.Column(db.Integer, db.ForeignKey('user.id'),nullable=True)
+    id_peoples = db.Column(db.Integer, db.ForeignKey('people.id'),nullable=True)
+    id_planets = db.Column(db.Integer, db.ForeignKey('planet.id'),nullable=True)
+    id_vehicles = db.Column(db.Integer, db.ForeignKey('vehicle.id'),nullable=True)
 
-    # Relationship 1 a n con People, Planet, Vehicle, Starship
-    id_peoples = db.relationship('People', backref='favourite', lazy=True)
-    id_planets = db.relationship('Planet', backref='favourite', lazy=True)
-    id_vehicles = db.relationship('Vehicle', backref='favourite', lazy=True)
-    # id_starships = db.relationship('Starship', backref='favourite', lazy=True) # TODO 
-    
     def __repr__(self):
         return '<Favourite %r>' % self.id
     
     def serialize(self):
-        serialized_relations = {
-            # CON FOR QUEDA MAS FACIL 
-            # "id_peoples": [peoples.serialize() for people in self.id_peoples],
-            # "id_planets": [planets.serialize() for planet in self.id_planets],
-            # "id_vehicles": [vehicles.serialize() for vehicle in self.id_vehicles]
-            "id_peoples": list(map(lambda p: p.serialize(), self.id_peoples)),
-            "id_planets": list(map(lambda pl: pl.serialize(), self.id_planets)),
-            "id_vehicles": list(map(lambda v: v.serialize(), self.id_vehicles))
+        serialized_relations = {          
+            #"id_peoples": [peoples.serialize() for people in self.id_peoples],
+            #"id_planets": [planets.serialize() for planet in self.id_planets],
+            #"id_vehicles": [vehicles.serialize() for vehicle in self.id_vehicles]
+
+            # "id_peoples": list(map(lambda p: p.serialize(), self.id_peoples)),
+            # "id_planets": list(map(lambda pl: pl.serialize(), self.id_planets)),
+            # "id_vehicles": list(map(lambda v: v.serialize(), self.id_vehicles))
         }
         return {
             "name": self.name,
             "relations": serialized_relations
         }
       
-  
-
 class People(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), unique=True, nullable=False)
@@ -68,9 +67,8 @@ class People(db.Model):
     birth_year = db.Column(db.String(120), unique=True, nullable=False)
     gender = db.Column(db.String(120), unique=True, nullable=False)
 
-    # Relationships n a 1 con Favourite
-    favourite_id = db.Column(db.Integer, db.ForeignKey('favourite.id'),nullable=True)
-    #user = db.relationship('User') # forma Rodri
+    # Relationships 1 a n con Favourite
+    favourites = db.relationship('Favourite', backref='people', lazy=True)
 
     def __repr__(self):
         return '<People %r>' % self.id
@@ -102,14 +100,15 @@ class Vehicle(db.Model):
     consumables = db.Column(db.String(250), nullable=False)
     vehicle_class = db.Column(db.String(250), nullable=False)
 
-    # Relationships n a 1 con Favourite
-    favourite_id = db.Column(db.Integer, db.ForeignKey('favourite.id'),nullable=True)
+    # Relationships 1 a n con Favourite
+    favourites = db.relationship('Favourite', backref='vehicle', lazy=True)
 
     def __repr__(self):
         return '<Vehicle %r>' % self.id
 
     def serialize(self):
         return {
+            "id": self.id,
             "name" : self.name,
             "model" : self.model,
             "manufacturer" : self.manufacturer,
@@ -134,14 +133,15 @@ class Planet(db.Model):
     surface_water = db.Column(db.Integer, nullable=False)
     population = db.Column(db.Integer, nullable=False)
 
-    # Relationships n a 1 con Favourite
-    favourite_id = db.Column(db.Integer, db.ForeignKey('favourite.id'),nullable=True)
-
+    # Relationships 1 a n con Favourite
+    favourites = db.relationship('Favourite', backref='planet', lazy=True)
+    favourites = db.relationship('Favourite', backref='vehicle', lazy=True)
     def __repr__(self):
         return '<Planet %r>' % self.id
 
     def serialize(self):
         return {
+            "id": self.id,
             "name" : self.name,
             "rotation_period" : self.rotation_period,
             "orbital_period" : self.orbital_period,
@@ -150,5 +150,6 @@ class Planet(db.Model):
             "gravity" : self.gravity,
             "terrain" : self.terrain,
             "surface_water" : self.surface_water,
-            "population" : self.population
+            "population" : self.population,
+            "favourites": [favourriteserialize() for favourite in self.favourites]
         }
