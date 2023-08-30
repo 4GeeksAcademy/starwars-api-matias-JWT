@@ -29,7 +29,7 @@ class Favourite(db.Model):
 
     # Relationships 1 a 1 con User
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    user = db.relationship('User', back_populates='favorite', uselist=False) # de rodrigo, sino me queda de 1 user a n favourite
+    # user = db.relationship('User', back_populates='favorite', uselist=False) # de rodrigo, sino me queda de 1 user a n favourite
 
     # Relationship 1 a n con People, Planet, Vehicle, Starship
     id_peoples = db.relationship('People', backref='favourite', lazy=True)
@@ -41,10 +41,20 @@ class Favourite(db.Model):
         return '<Favourite %r>' % self.id
     
     def serialize(self):
-        return {
-            "name": self.name
+        serialized_relations = {
+            # CON FOR QUEDA MAS FACIL 
+            # "id_peoples": [peoples.serialize() for people in self.id_peoples],
+            # "id_planets": [planets.serialize() for planet in self.id_planets],
+            # "id_vehicles": [vehicles.serialize() for vehicle in self.id_vehicles]
+            "id_peoples": list(map(lambda p: p.serialize(), self.id_peoples)),
+            "id_planets": list(map(lambda pl: pl.serialize(), self.id_planets)),
+            "id_vehicles": list(map(lambda v: v.serialize(), self.id_vehicles))
         }
-
+        return {
+            "name": self.name,
+            "relations": serialized_relations
+        }
+      
   
 
 class People(db.Model):
@@ -68,8 +78,9 @@ class People(db.Model):
     def serialize(self):
         return {
             "id": self.id,
-            "height": self.name,
-            "mass": self.name,
+            "name": self.name,
+            "height": self.height,
+            "mass": self.mass,
             "hair_color" : self.hair_color,
             "skin_color" : self.skin_color,
             "eye_color" : self.eye_color,
@@ -106,7 +117,7 @@ class Vehicle(db.Model):
             "length" : self.length,
             "speed" : self.speed,
             "crew" : self.crew,
-            "cargo_capacity" : self.namcargo_capacitye,
+            "cargo_capacity" : self.cargo_capacity,
             "consumables" : self.consumables,
             "vehicle_class" : self.vehicle_class
         }
