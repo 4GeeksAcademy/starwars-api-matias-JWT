@@ -37,6 +37,7 @@ class Favourite(db.Model):
     id_peoples = db.Column(db.Integer, db.ForeignKey('people.id'),nullable=True)
     id_planets = db.Column(db.Integer, db.ForeignKey('planet.id'),nullable=True)
     id_vehicles = db.Column(db.Integer, db.ForeignKey('vehicle.id'),nullable=True)
+    
 
     def __repr__(self):
         return '<Favourite %r>' % self.id

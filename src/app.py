@@ -11,8 +11,16 @@ from admin import setup_admin
 from models import db, User, People, Vehicle, Planet, Favourite
 #from models import Person
 
+from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
+
+
 app = Flask(__name__)
 app.url_map.strict_slashes = False
+
+# Setup the Flask-JWT-Extended extension
+app.config["JWT_SECRET_KEY"] = "super-secret"  # Change this!
+jwt = JWTManager(app)
+
 
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
@@ -20,6 +28,7 @@ if db_url is not None:
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:////tmp/test.db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 
 MIGRATE = Migrate(app, db)
 db.init_app(app)
@@ -269,6 +278,43 @@ def delete_user_favourite_planet(user_id, planet_id):
             return jsonify({"msg": "Planet no exist in user's favourites"}), 400
 
     return jsonify({"msg": "No se pudo eliminar nada"}), 404
+
+
+# /signup	<Signup>	Renderizar formulario de registro
+# /login	<Login>	Renderizar formulario de Inicio de sesión
+# /private	<Private>	Validar que solo ingresen usuarios autenticados y renderizar este componente
+
+
+# Create a route to authenticate your users and return JWTs. The
+# create_access_token() function is used to actually generate the JWT.
+@app.route("/login", methods=["POST"])
+def login():
+    username = request.json.get("username", None)
+    password = request.json.get("password", None)
+    if username != "test" or password != "test":
+        return jsonify({"msg": "Bad username or password"}), 401
+
+    print("TEST login: ", username)
+
+    access_token = create_access_token(identity=username)
+    return jsonify(access_token=access_token)
+
+# Protect a route with jwt_required, which will kick out requests
+# without a valid JWT present.
+@app.route("/protected", methods=["GET"])
+@jwt_required()
+def protected():
+    # Access the identity of the current user with get_jwt_identity
+    current_user = get_jwt_identity()
+    return jsonify(logged_in_as=current_user), 200
+
+
+
+
+
+
+
+
 
 
 # this only runs if `$ python src/app.py` is executed
