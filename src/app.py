@@ -160,8 +160,8 @@ def get_user_favourite(user_id):
 
 # [POST] /favorite/planet/<int:planet_id> Añade un nuevo planet favorito al usuario actual con el planet id = planet_id.✅
 # [POST] /favorite/people/<int:people_id> Añade una nueva people favorita al usuario actual con el people.id = people_id.✅
-# [DELETE] /favorite/planet/<int:planet_id> Elimina un planet favorito con el id = planet_id`.
-# [DELETE] /favorite/people/<int:people_id> Elimina una people favorita con el id = people_id.
+# [DELETE] /favorite/planet/<int:planet_id> Elimina un planet favorito con el id = planet_id`.✅
+# [DELETE] /favorite/people/<int:people_id> Elimina una people favorita con el id = people_id.✅
 
 # ADD FAVOURITE PLANET
 @app.route('/users/<int:user_id>/favourites/planet/<int:planet_id>', methods=['POST'])
