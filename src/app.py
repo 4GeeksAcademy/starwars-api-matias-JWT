@@ -225,6 +225,28 @@ def add_user_favourite_people(user_id, people_id):
 
     return jsonify({"msg": "No se pudo agregar nada"}), 404
 
+# DELETE FAVORITE PEOPLE FROM USER
+@app.route('/users/<int:user_id>/favourites/people/<int:people_id>', methods=['DELETE'])
+def delete_user_favourite_people(user_id, people_id):
+    # user exist ?
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"msg": "User not found"}), 404
+
+    # people exist ?
+    people = People.query.get(people_id)
+    if people:
+        # people exist in user-favourite?
+        existing_favourite = Favourite.query.filter_by(id_user=user_id, id_peoples=people_id).first()
+        if existing_favourite:
+            db.session.delete(existing_favourite)
+            db.session.commit()
+            return jsonify({"msg": f"People {people_id} removed from user's favorites {user_id}"}), 200
+        else:
+            return jsonify({"msg": "People no exist in user's favourites"}), 400
+
+    return jsonify({"msg": "No se pudo eliminar nada"}), 404
+
 
 
 
