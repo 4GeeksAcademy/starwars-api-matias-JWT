@@ -248,6 +248,27 @@ def delete_user_favourite_people(user_id, people_id):
     return jsonify({"msg": "No se pudo eliminar nada"}), 404
 
 
+# DELETE FAVORITE PLANET FROM USER
+@app.route('/users/<int:user_id>/favourites/planet/<int:planet_id>', methods=['DELETE'])
+def delete_user_favourite_planet(user_id, planet_id):
+    # user exist ?
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"msg": "User not found"}), 404
+
+    # planet exist ?
+    planet = Planet.query.get(planet_id)
+    if planet:
+        # planet exist in user-favourite?
+        existing_favourite = Favourite.query.filter_by(id_user=user_id, id_planets=planet_id).first() # id_planet de la entidad, planet_id de los que nos llega
+        if existing_favourite:
+            db.session.delete(existing_favourite)
+            db.session.commit()
+            return jsonify({"msg": f"Planet {planet_id} removed from user's favorites {user_id}"}), 200
+        else:
+            return jsonify({"msg": "Planet no exist in user's favourites"}), 400
+
+    return jsonify({"msg": "No se pudo eliminar nada"}), 404
 
 
 # this only runs if `$ python src/app.py` is executed
