@@ -30,7 +30,7 @@ class User(db.Model):
 
 class Favourite(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), unique=True, nullable=False)
+    name = db.Column(db.String(120), unique=False, nullable=True)
 
     # Relationships 1 a n con User, people, planet, vehicle, starship
     id_user = db.Column(db.Integer, db.ForeignKey('user.id'),nullable=True)
@@ -42,18 +42,11 @@ class Favourite(db.Model):
         return '<Favourite %r>' % self.id
     
     def serialize(self):
-        serialized_relations = {          
-            #"id_peoples": [peoples.serialize() for people in self.id_peoples],
-            #"id_planets": [planets.serialize() for planet in self.id_planets],
-            #"id_vehicles": [vehicles.serialize() for vehicle in self.id_vehicles]
-
-            # "id_peoples": list(map(lambda p: p.serialize(), self.id_peoples)),
-            # "id_planets": list(map(lambda pl: pl.serialize(), self.id_planets)),
-            # "id_vehicles": list(map(lambda v: v.serialize(), self.id_vehicles))
-        }
         return {
             "name": self.name,
-            "relations": serialized_relations
+            "id_peoples": self.id_peoples,
+            "id_planets": self.id_planets,
+            "id_vehicles": self.id_vehicles,
         }
       
 class People(db.Model):
@@ -118,7 +111,7 @@ class Vehicle(db.Model):
             "crew" : self.crew,
             "cargo_capacity" : self.cargo_capacity,
             "consumables" : self.consumables,
-            "vehicle_class" : self.vehicle_class
+            "vehicle_class" : self.vehicle_class,
         }
     
 class Planet(db.Model):
@@ -135,7 +128,7 @@ class Planet(db.Model):
 
     # Relationships 1 a n con Favourite
     favourites = db.relationship('Favourite', backref='planet', lazy=True)
-    favourites = db.relationship('Favourite', backref='vehicle', lazy=True)
+
     def __repr__(self):
         return '<Planet %r>' % self.id
 
@@ -151,5 +144,4 @@ class Planet(db.Model):
             "terrain" : self.terrain,
             "surface_water" : self.surface_water,
             "population" : self.population,
-            "favourites": [favourriteserialize() for favourite in self.favourites]
         }
