@@ -292,7 +292,12 @@ def delete_user_favourite_planet(user_id, planet_id):
 @app.route('/signup', methods=['POST'])
 def signup():
     request_body = request.get_json(force=True)
-    new_user = User(email = request_body["email"], password = request_body["password"])
+     
+    new_user = User(username=request_body["username"],
+                    email = request_body["email"], 
+                    password = request_body["password"],
+                    is_active = request_body["is_active"]
+                    )
 
     db.session.add(new_user)
     db.session.commit()
