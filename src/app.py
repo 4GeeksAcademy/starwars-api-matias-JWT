@@ -13,14 +13,12 @@ from models import db, User, People, Vehicle, Planet, Favourite
 
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager
 
-
 app = Flask(__name__)
 app.url_map.strict_slashes = False
 
 # Setup the Flask-JWT-Extended extension
 app.config["JWT_SECRET_KEY"] = "super-secret"  # Change this!
 jwt = JWTManager(app)
-
 
 db_url = os.getenv("DATABASE_URL")
 if db_url is not None:
@@ -54,7 +52,7 @@ def sitemap():
 # [GET] /users Listar todos los usuarios del blog ✅
 # [GET] /users/favorites Listar todos los favoritos que pertenecen al usuario actual. ✅
 
-# ALL PEOPLE
+# ALL PEOPLE 👨‍👩‍👧‍👦
 @app.route('/people', methods=['GET'])
 def get_people():
     people_query = People.query.all()
@@ -65,7 +63,7 @@ def get_people():
     
     return jsonify(response_body), 200
 
-# ONE PEOPLE
+# ONE PEOPLE 👨‍💼
 @app.route('/people/<int:people_id>', methods=['GET'])
 def get_one_people(people_id):
     one_people = People.query.filter_by(id=people_id).first()
@@ -79,7 +77,7 @@ def get_one_people(people_id):
     return jsonify(response_body), 200
 
 
-# ALL PLANETS
+# ALL PLANETS 🪐🪐🪐
 @app.route('/planets', methods=['GET'])
 def get_planets():
     planet_query = Planet.query.all()
@@ -90,7 +88,7 @@ def get_planets():
     
     return jsonify(response_body), 200
 
-# ONE PLANET
+# ONE PLANET 🪐
 @app.route('/planets/<int:planet_id>', methods=['GET'])
 def get_one_planet(planet_id):
     one_planet = Planet.query.filter_by(id=planet_id).first()
@@ -104,7 +102,7 @@ def get_one_planet(planet_id):
     return jsonify(response_body), 200
 
 
-# ALL USERS
+# ALL USERS 👥
 @app.route('/users', methods=['GET'])
 def get_users():
     user_query = User.query.all()
@@ -115,7 +113,7 @@ def get_users():
     
     return jsonify(response_body), 200
 
-# ONE USER
+# ONE USER 👤
 @app.route('/users/<int:user_id>', methods=['GET'])
 def get_one_user(user_id):
     one_user = User.query.filter_by(id=user_id).first()
@@ -128,8 +126,9 @@ def get_one_user(user_id):
     
     return jsonify(response_body), 200
 
-# USER FAVOURITE
+# USER FAVOURITE 🎇🎇🎇
 @app.route('/users/<int:user_id>/favourites', methods=['GET'])
+@jwt_required()
 def get_user_favourite(user_id):
     # .all() obtiene todos
     # .first() obtiene el primero
@@ -139,6 +138,13 @@ def get_user_favourite(user_id):
 
     if not user:
         return jsonify({"msg": "User not found"}), 404
+    
+    # tomamos el id del token generado y lo comparamos con el user_id que viene
+    current_user_id = get_jwt_identity()
+
+    # Verifica si el usuario actual coincide con el usuario solicitado
+    if current_user_id != user.id:
+        return jsonify({"msg": "You don't have user favorites permission"}), 403
 
     favourites_list = Favourite.query.filter_by(id_user=user_id).all() # lista de objetos con los id de los fav
     print("TEST favourite user list: ",favourites_list)
@@ -172,7 +178,7 @@ def get_user_favourite(user_id):
 # [DELETE] /favorite/planet/<int:planet_id> Elimina un planet favorito con el id = planet_id`.✅
 # [DELETE] /favorite/people/<int:people_id> Elimina una people favorita con el id = people_id.✅
 
-# ADD FAVOURITE PLANET
+# ADD FAVOURITE PLANET 🎇🪐
 @app.route('/users/<int:user_id>/favourites/planet/<int:planet_id>', methods=['POST'])
 def add_user_favourite_planet(user_id, planet_id):
     # user exist ?
@@ -203,7 +209,7 @@ def add_user_favourite_planet(user_id, planet_id):
 
     return jsonify({"msg": "No se pudo agregar nada"}), 404
 
-# ADD FAVOURITE PEOPLE
+# ADD FAVOURITE PEOPLE 🎇👨‍💼
 @app.route('/users/<int:user_id>/favourites/people/<int:people_id>', methods=['POST'])
 def add_user_favourite_people(user_id, people_id):
     # user exist ?
@@ -234,7 +240,7 @@ def add_user_favourite_people(user_id, people_id):
 
     return jsonify({"msg": "No se pudo agregar nada"}), 404
 
-# DELETE FAVORITE PEOPLE FROM USER
+# DELETE FAVORITE PEOPLE FROM USER ❌🎇👨‍💼
 @app.route('/users/<int:user_id>/favourites/people/<int:people_id>', methods=['DELETE'])
 def delete_user_favourite_people(user_id, people_id):
     # user exist ?
@@ -256,8 +262,7 @@ def delete_user_favourite_people(user_id, people_id):
 
     return jsonify({"msg": "No se pudo eliminar nada"}), 404
 
-
-# DELETE FAVORITE PLANET FROM USER
+# DELETE FAVORITE PLANET FROM USER ❌🎇🪐
 @app.route('/users/<int:user_id>/favourites/planet/<int:planet_id>', methods=['DELETE'])
 def delete_user_favourite_planet(user_id, planet_id):
     # user exist ?
@@ -279,26 +284,47 @@ def delete_user_favourite_planet(user_id, planet_id):
 
     return jsonify({"msg": "No se pudo eliminar nada"}), 404
 
+# /signup	<Signup>	Renderizar formulario de registro ✅
+# /login	<Login>	Renderizar formulario de Inicio de sesión ✅
+# /private	<Private>	Validar que solo ingresen usuarios autenticados y renderizar este componente EN FAV ✅
 
-# /signup	<Signup>	Renderizar formulario de registro
-# /login	<Login>	Renderizar formulario de Inicio de sesión
-# /private	<Private>	Validar que solo ingresen usuarios autenticados y renderizar este componente
+# SIGNUP NEW USER ✔ TODO >> verificar si ya existe mail
+@app.route('/signup', methods=['POST'])
+def signup():
+    request_body = request.get_json(force=True)
+    new_user = User(email = request_body["email"], password = request_body["password"])
 
+    db.session.add(new_user)
+    db.session.commit()
+   
+    return { "msg": "Usuario creado con éxito",
+            "response": new_user.serialize(),
+            }
 
-# Create a route to authenticate your users and return JWTs. The
-# create_access_token() function is used to actually generate the JWT.
-@app.route("/login", methods=["POST"])
+# LOGIN  ✔
+@app.route('/login', methods=['POST'])
 def login():
-    username = request.json.get("username", None)
+
+    email = request.json.get("email", None)
     password = request.json.get("password", None)
-    if username != "test" or password != "test":
-        return jsonify({"msg": "Bad username or password"}), 401
+    login_user = User.query.filter_by(email=email).first()
+    # user email exist ?
+    if not login_user:
+        return jsonify({"msg": "User not found"}), 404
+    
+    if email != login_user.email or password != login_user.password:
+        return jsonify({"msg": "Incorrect login"})
+    
+    # pasamos el id para poder usarlo en >>>  get_jwt_identity()
+    access_token = create_access_token(identity=login_user.id) 
 
-    print("TEST login: ", username)
+    response_body = { "access_token": access_token,
+                    "email": login_user.serialize()
+                    }
+    
+    return jsonify(response_body)
 
-    access_token = create_access_token(identity=username)
-    return jsonify(access_token=access_token)
-
+# TEST 
 # Protect a route with jwt_required, which will kick out requests
 # without a valid JWT present.
 @app.route("/protected", methods=["GET"])
@@ -307,14 +333,6 @@ def protected():
     # Access the identity of the current user with get_jwt_identity
     current_user = get_jwt_identity()
     return jsonify(logged_in_as=current_user), 200
-
-
-
-
-
-
-
-
 
 
 # this only runs if `$ python src/app.py` is executed
