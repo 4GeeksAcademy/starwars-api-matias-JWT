@@ -192,9 +192,9 @@ def add_user_favourite_planet(user_id, planet_id):
         # planet exist in user-favourite?
         existing_favourite = Favourite.query.filter_by(id_user=user_id, id_planets=planet_id).first()
         if existing_favourite:
-            return jsonify({"msg": "Planet already in user's favourites"}), 400
-            # Agrega el nuevo favorito a la base de datos
+            return jsonify({"msg": "Planet already in user's favourites"}), 400       
         else:
+            # Agrega el nuevo favorito a la base de datos
             new_favourite_planet = Favourite(name="Nombre del favorito", 
                                     id_user=user_id, 
                                     id_peoples=None, 
