@@ -44,6 +44,7 @@ def sitemap():
     return generate_sitemap(app)
 
 # Endpoints # Poner servidor en publico, sino no funciona mister postman
+# MULTI COMANDO PARA PRENDER EL SERVER >>> pipenv run migrate && pipenv run upgrade && pipenv run start
 
 # [GET] /people Listar todos los registros de people en la base de datos✅
 # [GET] /people/<int:people_id> Listar la información de una sola people ✅
@@ -312,6 +313,7 @@ def login():
 
     email = request.json.get("email", None)
     password = request.json.get("password", None)
+    
     login_user = User.query.filter_by(email=email).first()
     # user email exist ?
     if not login_user:
@@ -324,10 +326,17 @@ def login():
     access_token = create_access_token(identity=login_user.id) 
 
     response_body = { "access_token": access_token,
-                    "email": login_user.serialize()
+                    "user": login_user.serialize()
                     }
     
     return jsonify(response_body)
+
+
+@app.route("/valid-token", methods=["GET"])
+@jwt_required
+def valid_token():
+    current_user = get_jwt_identity()
+    return jsonify({"is_logged":True}), 200
 
 # TEST 
 # Protect a route with jwt_required, which will kick out requests
@@ -338,6 +347,38 @@ def protected():
     # Access the identity of the current user with get_jwt_identity
     current_user = get_jwt_identity()
     return jsonify(logged_in_as=current_user), 200
+
+# TEST ADD FAVOURITE PLANET 🎇🪐  WITH THE FRONT ID PLANET
+@app.route('/users/<int:user_id>/favouritesfront/planet/<int:planet_id>', methods=['POST'])
+def add_user_favourite_planet_with_front_id(user_id, planet_id):
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"msg": "User not found"}), 404
+
+   
+    existing_favourite = Favourite.query.filter_by(id_user=user_id, id_planets=planet_id).first()
+    
+    if existing_favourite:
+        return jsonify({"msg": "Planet already in user's favourites"}), 400
+            # Agrega el nuevo favorito a la base de datos
+    else:
+        new_favourite_planet = Favourite(name="Nombre del favorito", 
+                                    id_user=user_id, 
+                                    id_peoples=None, 
+                                    id_planets=planet_id, 
+                                    id_vehicles=None
+                                    )
+            
+        db.session.add(new_favourite_planet)
+        db.session.commit()
+
+        return jsonify({"msg": f"Planeta {planet_id} se agrego a favoritos del usuario {user_id} "}), 201
+
+    
+
+
+
+
 
 
 # this only runs if `$ python src/app.py` is executed

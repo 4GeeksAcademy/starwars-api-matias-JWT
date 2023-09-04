@@ -24,7 +24,8 @@ class User(db.Model):
         return {
             "id": self.id,
             "email": self.email,
-            "username": self.username
+            "username": self.username,
+            "is_active": self.is_active
             # do not serialize the password, its a security breach
         }
 
@@ -117,15 +118,16 @@ class Vehicle(db.Model):
     
 class Planet(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(250), nullable=False)
-    rotation_period = db.Column(db.Integer, nullable=False)
-    orbital_period = db.Column(db.Integer, nullable=False)
-    diameter = db.Column(db.Integer, nullable=False)
-    climate = db.Column(db.String(250), nullable=False)
-    gravity = db.Column(db.Float(50), nullable=False)
-    terrain = db.Column(db.String(250), nullable=False)
-    surface_water = db.Column(db.Integer, nullable=False)
-    population = db.Column(db.Integer, nullable=False)
+    # TODOS EN nulleable=True, PARA PODER GUARDAR TODOS LOS ID QUE VIENEN DEL FRONT DE LA OTRA API.
+    name = db.Column(db.String(250), nullable=True) 
+    rotation_period = db.Column(db.Integer, nullable=True)
+    orbital_period = db.Column(db.Integer, nullable=True)
+    diameter = db.Column(db.Integer, nullable=True)
+    climate = db.Column(db.String(250), nullable=True)
+    gravity = db.Column(db.Float(50), nullable=True)
+    terrain = db.Column(db.String(250), nullable=True)
+    surface_water = db.Column(db.Integer, nullable=True)
+    population = db.Column(db.Integer, nullable=True)
 
     # Relationships 1 a n con Favourite
     favourites = db.relationship('Favourite', backref='planet', lazy=True)
